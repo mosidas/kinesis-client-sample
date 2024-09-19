@@ -1,0 +1,14 @@
+services:
+  client:
+    image: client-proto-image
+    container_name: proto
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DOTNET_TAG=8.0
+    environment:
+      - TZ=Asia/Tokyo
+    restart: always
+
+
