@@ -1,16 +1,17 @@
 ARG DOTNET_TAG=8.0
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_TAG} AS build-env
-WORKDIR /App
 
-# Copy everything
-COPY . ./
-# Restore as distinct layers
-RUN dotnet restore
-# Build and publish a release
-RUN dotnet publish -c Release -o out
+# build stage
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_TAG} AS build
+WORKDIR /src
+COPY KinesisConsumer/*.csproj ./
+RUN dotnet restore --use-current-runtime
+COPY KinesisConsumer/ ./
+RUN dotnet publish --use-current-runtime -o /app
 
-# Build runtime image
+
+# runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_TAG}
-WORKDIR /App
-COPY --from=build-env /App/out .
-ENTRYPOINT ["dotnet", "Proto.dll"]
+WORKDIR /app
+EXPOSE 80
+COPY --from=build /app ./
+ENTRYPOINT ["dotnet", "KinesisConsumer.dll"]

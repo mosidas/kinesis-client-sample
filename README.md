@@ -1,21 +1,23 @@
-# Proto
+# KinesisConsumer
 
-## local
-
-```bash
-docker build -t proto-image .
-docker run --rm proto-image --name proto
-```
-## ECS
+## create kinesis stream
 
 ```bash
-# ECRにログイン
-aws ecr get-login-password --region {your-region} | docker login --username AWS --password-stdin {your-account-id}.dkr.ecr.{your-region}.amazonaws.com
-
-# リポジトリを作成（初回のみ）
-aws ecr create-repository --repository-name mydotnetapp
-
-# タグ付けしてプッシュ
-docker tag mydotnetapp:latest {your-account-id}.dkr.ecr.{your-region}.amazonaws.com/mydotnetapp:latest
-docker push {your-account-id}.dkr.ecr.{your-region}.amazonaws.com/mydotnetapp:latest
+# create
+aws kinesis create-stream --stream-name {name} --shard-count {number}
+# example
+aws kinesis create-stream --stream-name my-stream --shard-count 1
 ```
+
+```bash
+# confirm
+aws kinesis describe-stream --stream-name {name}
+# example
+aws kinesis describe-stream --stream-name my-stream
+```
+
+```bash
+# list
+aws kinesis list-streams
+```
+

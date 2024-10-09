@@ -5,11 +5,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Proto</RootNamespace>
+    <RootNamespace>KinesisConsumer</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Kinesis" Version="3.7.401.19" />
+    <PackageReference Include="AWSSDK.Kinesis" Version="3.7.402.9" />
   </ItemGroup>
 
 </Project>

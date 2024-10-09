@@ -1,14 +1,12 @@
 services:
-  client:
-    image: client-proto-image
-    container_name: proto
+  kinesisconsumer:
+    container_name: kinesis-consumer
+    image: kinesis-consumer-image
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - DOTNET_TAG=8.0
     environment:
       - TZ=Asia/Tokyo
-    restart: always
-
-
+      - AWS_ACCESS_KEY_ID={your_access_key}
+      - AWS_SECRET_ACCESS_KEY={your_secret_key}
+      - AWS_REGION=ap-northeast-1
