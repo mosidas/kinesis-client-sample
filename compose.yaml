@@ -1,12 +1,25 @@
 services:
-  kinesisconsumer:
-    container_name: kinesis-consumer
+  kinesisconsumer1:
+    container_name: kinesis-consumer1
     image: kinesis-consumer-image
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       - TZ=Asia/Tokyo
-      - AWS_ACCESS_KEY_ID={your_access_key}
-      - AWS_SECRET_ACCESS_KEY={your_secret_key}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=ap-northeast-1
+      - CONTAINER_ID=0
+  kinesisconsumer2:
+    container_name: kinesis-consumer2
+    image: kinesis-consumer-image
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - TZ=Asia/Tokyo
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=ap-northeast-1
+      - CONTAINER_ID=1

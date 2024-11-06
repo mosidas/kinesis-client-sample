@@ -4,10 +4,11 @@ using Amazon.Kinesis.Model;
 
 namespace KinesisConsumer;
 
-public class KinesisConsumer(Amazon.RegionEndpoint region, string streamName)
+public class KinesisConsumer(Amazon.RegionEndpoint region, string streamName, string containerId)
 {
   private readonly AmazonKinesisClient _client = new(region);
   private readonly string _streamName = streamName;
+  private readonly string _containerId = containerId;
 
   public async Task RunAsync()
   {
@@ -29,19 +30,27 @@ public class KinesisConsumer(Amazon.RegionEndpoint region, string streamName)
   private async Task Consume()
   {
     IEnumerable<Shard> shards = await GetShards();
-    foreach (var shard in shards)
+    var assignedShards = shards.Where((_, index) => index % 2 == int.Parse(_containerId));
+    Console.WriteLine($"assignedShards: {string.Join(", ", assignedShards.Select(s => s.ShardId))}");
+    // 各シャードの処理を非同期で実行
+    var tasks = assignedShards.Select(shard => ProcessShardAsync(shard));
+
+    // すべてのタスクが完了するのを待つ
+    await Task.WhenAll(tasks);
+  }
+
+  private async Task ProcessShardAsync(Shard shard)
+  {
+    var shardIterator = await GetShardIteratorAsync(shard.ShardId);
+    while (!string.IsNullOrEmpty(shardIterator))
     {
-      var shardIterator = await GetShardIteratorAsync(shard.ShardId);
-      while (!string.IsNullOrEmpty(shardIterator))
+      var getRecordsResponse = await GetRecordsAsync(shardIterator);
+      foreach (var record in getRecordsResponse.Records)
       {
-        var getRecordsResponse = await GetRecordsAsync(shardIterator);
-        foreach (var record in getRecordsResponse.Records)
-        {
-          Console.WriteLine($"record: {Encoding.UTF8.GetString(record.Data.ToArray())}");
-        }
-        shardIterator = getRecordsResponse.NextShardIterator;
-        await Task.Delay(100);
+        Console.WriteLine($"shardId: {shard.ShardId}, record: {Encoding.UTF8.GetString(record.Data.ToArray())}");
       }
+      shardIterator = getRecordsResponse.NextShardIterator;
+      await Task.Delay(100);
     }
   }
 
@@ -61,9 +70,11 @@ public class KinesisConsumer(Amazon.RegionEndpoint region, string streamName)
     {
       StreamName = _streamName,
       ShardId = shardId,
-      ShardIteratorType = ShardIteratorType.TRIM_HORIZON
+      ShardIteratorType = ShardIteratorType.LATEST
     };
+    Console.WriteLine($"START GetShardIteratorAsync shardId: {shardId}");
     var shardIteratorResponse = await _client.GetShardIteratorAsync(shardIteratorRequest);
+    Console.WriteLine($"END GetShardIteratorAsync shardId: {shardId}");
     return shardIteratorResponse.ShardIterator;
   }
 
